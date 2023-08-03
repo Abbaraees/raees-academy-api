@@ -7,6 +7,12 @@ courses_enrolled = db.Table('courses_enrolled',
     db.Column('completed', db.Boolean, default=False)
 )
 
+# Create a Many-to-Many relation b/w students and lessons
+lessons_completed = db.Table('lessons_completed',
+    db.Column('lesson_id', db.ForeignKey('lesson.id')),
+    db.Column('student_id', db.ForeignKey('student.id')),
+    db.Column('completed', db.Boolean, default=False)
+)
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -17,6 +23,13 @@ class Student(db.Model):
     courses_enrolled = db.relationship('Course',
         secondary='courses_enrolled',
         primaryjoin=(courses_enrolled.c.student_id == id),
+        backref=db.backref('students', lazy='dynamic'),
+        lazy='dynamic'
+    )
+
+    lessons_completed = db.relationship('Lesson',
+        secondary='lessons_completed',
+        primaryjoin=(lessons_completed.c.student_id == id),
         backref=db.backref('students', lazy='dynamic'),
         lazy='dynamic'
     )
