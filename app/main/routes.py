@@ -2,33 +2,13 @@ from flask import g, request
 from app.main import bp
 from app.main.models import Course, Student
 from .authentication import auth
+from .errors import unauthorized
 
 
 @bp.route('/test')
 def test():
     return {
         "message": "Testing"
-    }
-
-@bp.route('/tokens/', methods=['POST'])
-def get_token():
-    data = request.get_json()
-    if data['email'] == '' or data['password'] == '':
-        return {
-            "error": "unauthorized",
-            'message': 'INvalid credentials'
-        }
-    
-    user = Student.query.filter_by(email=data['email']).first()
-    if user is None or not user.verify_password(data['password']):
-        return {
-            "error": "unauthorized",
-            'message': 'INvalid credentials'
-        }
-    
-    return {
-        'token': user.generate_auth_token(expiration=3600),
-        'expiration': 3600
     }
 
 

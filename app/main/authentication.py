@@ -1,6 +1,7 @@
 from flask import g, request
 from flask_httpauth import HTTPBasicAuth
 from .models import Student
+from app.main import bp
 
 auth = HTTPBasicAuth()
 
@@ -40,3 +41,19 @@ def verify_password(email_or_token, password):
     g.token_used = False 
 
     return user.verify_password(password)
+
+
+@bp.route('/tokens/', methods=['POST'])
+def get_token():
+    data = request.get_json()
+    if data['email'] == '' or data['password'] == '':
+        return unauthorized("Invalid credentials")
+    
+    user = Student.query.filter_by(email=data['email']).first()
+    if user is None or not user.verify_password(data['password']):
+        return unauthorized("Invalid credentials")
+    
+    return {
+        'token': user.generate_auth_token(expiration=3600),
+        'expiration': 3600
+    }
