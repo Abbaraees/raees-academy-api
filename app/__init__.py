@@ -25,6 +25,9 @@ def create_app():
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
+    from app.learn import bp as learn_bp
+    app.register_blueprint(learn_bp, url_prefix='/learn')
+
 
     @app.after_request
     def after_request(response):

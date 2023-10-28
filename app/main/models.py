@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
@@ -76,7 +76,8 @@ class Course(db.Model):
             "id": self.id,
             "name": self.name,
             "long_description": self.long_description,
-            "short_description": self.short_description
+            "short_description": self.short_description,
+            "url": url_for('learn.get_course', id=self.id)
         }
 
 
