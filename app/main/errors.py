@@ -10,6 +10,9 @@ def not_found(code):
 def internal_server_error(code):
     return {"error": "Internal server error", 'message': 'Internal server error'}, 500
 
+@bp.app_errorhandler(405)
+def method_not_allowed(code):
+    return {"error": "Method Not Allowed", 'message': 'The method is not allowed for the requested URL.'}, 405
 
 def unauthorized(message):
-    return {'error': 'unauthorized', 'message': message}, 403
+    return {'error': 'unauthorized', 'message': message, "success": False}, 403
