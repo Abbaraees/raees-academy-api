@@ -1,3 +1,9 @@
+from flask import current_app
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+import datetime
+import sys
+
 from app import db
 
 
@@ -33,6 +39,29 @@ class Student(db.Model):
         backref=db.backref('students', lazy='dynamic'),
         lazy='dynamic'
     )
+
+    def hash_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password, password)
+
+    def generate_auth_token(self, expiration):
+        return jwt.encode(
+            {"id": self.id, 'exp': datetime.datetime.now() + datetime.timedelta(seconds=expiration)},
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_auth_token(token):
+        try:
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        except:
+            print(sys.exc_info())
+            return None
+        
+        return Student.query.get(data['id'])
 
 
 class Course(db.Model):
