@@ -36,7 +36,7 @@ def enrolled_courses():
 
 
 # Enroll a user in a course
-@bp.route('/course/enroll', methods=['POST'])
+@bp.route('/courses/enroll', methods=['POST'])
 def enroll():
 
     #Get JSON data from the request
@@ -65,7 +65,7 @@ def enroll():
 
 
 # Unenroll user from a course
-@bp.route('/course/unenroll', methods=['POST'])
+@bp.route('/courses/unenroll', methods=['POST'])
 def unenroll():
     data = request.get_json()
 
@@ -91,3 +91,48 @@ def unenroll():
             'success': False,
             'message': "Unenrollment failed. Course ID is missing in the request.",
         }
+
+
+@bp.route('/courses/<int:course_id>/modules/')
+def get_course_modules(course_id):
+    course = Course.query.get_or_404(course_id)
+    modules = course.modules.all()
+
+    return {
+        "success": True,
+        "data": [module.format() for module in modules],
+        "count": len(modules)
+    }
+
+@bp.route('/courses/<int:course_id>/modules/<int:module_id>')
+def get_module(course_id, module_id):
+    course = Course.query.get_or_404(course_id)
+    module = course.modules.filter_by(id=module_id).first_or_404()
+
+    return {
+        "success": True,
+        "data": module.format(),
+    }
+
+@bp.route('/courses/<int:course_id>/modules/<int:module_id>/lessons/')
+def get_module_lessons(course_id, module_id):
+    course = Course.query.get_or_404(course_id)
+    module = course.modules.filter_by(id=module_id).first_or_404()
+    lessons = module.lessons.all()
+
+    return {
+        "success": True,
+        "data": [lesson.format() for lesson in lessons],
+        "count": len(lessons)
+    }
+
+@bp.route('/courses/<int:course_id>/modules/<int:module_id>/lessons/<int:lesson_id>/')
+def get_lesson(course_id, module_id, lesson_id):
+    course = Course.query.get_or_404(course_id)
+    module = course.modules.filter_by(id=module_id).first_or_404()
+    lesson = module.lessons.filter_by(id=lesson_id).first_or_404()
+
+    return {
+        "success": True,
+        "data": lesson.format(True),
+    }

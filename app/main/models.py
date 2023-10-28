@@ -97,6 +97,7 @@ class Module(db.Model):
             "id": self.id,
             "name": self.name,
             "description": self.description,
+            "url": url_for("learn.get_module", course_id=self.course_id, module_id=self.id)
         }
 
     def __repr__(self):
@@ -110,13 +111,19 @@ class Lesson(db.Model):
     status = db.Column(db.Boolean, nullable=False, default=False)
     module_id = db.Column(db.Integer, db.ForeignKey('module.id'))
 
-    def format(self):
-        return {
+    def format(self, include_content=False):
+        data = {
             "id": self.id,
             "name": self.name,
-            "content": self.content,
-            "status": self.status
+            "status": self.status,
+            "url": url_for('learn.get_lesson', course_id=self.module.course.id, module_id=self.module.id, lesson_id=self.id)
         }
+
+        if include_content:
+            data["content"] = self.content
+
+
+        return data
 
     def __repr__(self):
         return f'<Lesson: {self.name}>'
