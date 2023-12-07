@@ -1,4 +1,4 @@
-from flask import g, request, url_for
+from flask import g, request, url_for, redirect
 from app.learn import bp
 from app.main.models import Course, Student, db
 from app.main.authentication import auth
@@ -130,9 +130,32 @@ def get_module_lessons(course_id, module_id):
 def get_lesson(course_id, module_id, lesson_id):
     course = Course.query.get_or_404(course_id)
     module = course.modules.filter_by(id=module_id).first_or_404()
-    lesson = module.lessons.filter_by(id=lesson_id).first_or_404()
+    lessons = module.lessons.all()
+    current_lesson = list(filter(lambda x: x.id == lesson_id, lessons))[0]
+    current_lesson_index = lessons.index(current_lesson)
+    prev_lesson = lessons[current_lesson_index - 1] if current_lesson_index > 0 else None
+    next_lesson = lessons[current_lesson_index + 1] if current_lesson_index + 1 < len(lessons) else None
+    prev_url = None
+    next_url = None
+
+    if prev_lesson is not None:
+        prev_url = f"/courses/{course_id}/modules/{module_id}/lessons/{prev_lesson.id}"
+    if next_lesson is not None:
+        next_url = f"/courses/{course_id}/modules/{module_id}/lessons/{next_lesson.id}"
+
+    data = current_lesson.format(True)
+    data['next_url'] = next_url
+    data['prev_url'] = prev_url
 
     return {
         "success": True,
-        "data": lesson.format(True),
+        "data": data,
     }
+
+@bp.route('/courses/<int:course_id>/modules/<int:module_id>/lessons/start')
+def start_lesson(course_id, module_id):
+    course = Course.query.get_or_404(course_id)
+    module = course.modules.filter_by(id=module_id).first_or_404()
+    lesson = module.lessons.first_or_404()
+
+    return redirect(url_for('learn.get_lesson', course_id=course_id, module_id=module_id, lesson_id=lesson.id))
