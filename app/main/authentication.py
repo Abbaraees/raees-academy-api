@@ -17,6 +17,12 @@ def unauthorized():
 def verify_password(email_or_token, password):
     authorization_header = request.headers.get('Authorization')
     
+    if authorization_header is not None:
+        token = authorization_header.split()[1]
+        g.current_user = Student.verify_auth_token(token)
+        g.token_used = True
+        return g.current_user is not None
+
     if email_or_token == '':
         return False
     
@@ -25,11 +31,6 @@ def verify_password(email_or_token, password):
         g.token_used = True
         return g.current_user is not None
     
-    if authorization_header is not None:
-        token = authorization_header.split()[1]
-        g.current_user = Student.verify_auth_token(token)
-        g.token_used = True
-        return g.current_user is not None
 
     
     user = Student.query.filter_by(email=email_or_token).first()
